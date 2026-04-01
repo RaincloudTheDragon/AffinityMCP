@@ -99,6 +99,7 @@ pub struct ToolsCapability {
  * MCP Tool定義
  */
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Tool {
     /// ツール名
     pub name: String,

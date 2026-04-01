@@ -59,13 +59,15 @@ if (!fs.existsSync(binPath)) {
   process.exit(1);
 }
 
-// 実行権限の確認
-try {
-  fs.accessSync(binPath, fs.constants.X_OK);
-} catch (err) {
-  console.error("[affinity-mcp] Error: Binary is not executable:", binPath);
-  console.error("Try: chmod +x", binPath);
-  process.exit(1);
+// 実行権限の確認（Unix のみ。Windows の .exe では X_OK が意味を持たないことが多い）
+if (process.platform !== "win32") {
+  try {
+    fs.accessSync(binPath, fs.constants.X_OK);
+  } catch (err) {
+    console.error("[affinity-mcp] Error: Binary is not executable:", binPath);
+    console.error("Try: chmod +x", binPath);
+    process.exit(1);
+  }
 }
 
 // 環境変数を設定

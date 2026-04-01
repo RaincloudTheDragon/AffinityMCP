@@ -1,9 +1,9 @@
 /**
- * Affinity操作実装（macOS AppleScript対応）
+ * Affinity操作実装（macOS: AppleScript / Windows: インストール済み exe を起動）
  * 
  * 概要:
  *   Affinityアプリケーションを操作するための実装。
- *   macOSではAppleScriptを使用してアプリケーションを制御する。
+ *   macOS では AppleScript。Windows では `AFFINITY_*_EXE` または Program Files 下の既定パスから exe を起動する。
  * 
  * 主な仕様:
  *   - open_file: ファイルを開く
@@ -20,13 +20,19 @@
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
-use std::process::Command;
 use tracing::{error, debug, info};
 use futures::future::join_all;
+#[cfg(target_os = "macos")]
+use std::process::Command;
+#[cfg(target_os = "macos")]
 use std::sync::Arc;
+#[cfg(target_os = "macos")]
 use tokio::task;
 use std::fs;
 use std::path::PathBuf;
+
+#[cfg(windows)]
+use crate::tools::affinity_win;
 
 #[cfg(target_os = "macos")]
 async fn run_applescript(script: &str) -> Result<String> {
@@ -54,11 +60,6 @@ async fn run_applescript(script: &str) -> Result<String> {
     })
     .await
     .context("AppleScript実行タスクの完了待機に失敗しました")?
-}
-
-#[cfg(not(target_os = "macos"))]
-async fn run_applescript(_script: &str) -> Result<String> {
-    anyhow::bail!("AppleScriptはmacOSでのみ利用可能です")
 }
 
 /**
@@ -93,6 +94,20 @@ impl AffinityApp {
             AffinityApp::Photo => "Affinity Photo",
             AffinityApp::Designer => "Affinity Designer",
             AffinityApp::Publisher => "Affinity Publisher",
+        }
+    }
+
+    /// 拡張子から対象アプリを推定（`.afphoto` / `.afdesign` / `.afpub`、それ以外は Photo）。
+    pub(crate) fn from_file_path(path: &str) -> Self {
+        let path_lower = path.to_lowercase();
+        if path_lower.ends_with(".afphoto") {
+            AffinityApp::Photo
+        } else if path_lower.ends_with(".afdesign") {
+            AffinityApp::Designer
+        } else if path_lower.ends_with(".afpub") {
+            AffinityApp::Publisher
+        } else {
+            AffinityApp::Photo
         }
     }
 }
@@ -153,9 +168,19 @@ pub async fn open_file(params: OpenFileParams) -> Result<OpenFileResult> {
         })
     }
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(windows)]
     {
-        error!("macOS以外ではファイルを開く機能は未実装です");
+        let app = affinity_win::open_file_path(&params.path, params.app.as_ref())?;
+        Ok(OpenFileResult {
+            opened: true,
+            app,
+            path: params.path,
+        })
+    }
+
+    #[cfg(all(not(target_os = "macos"), not(windows)))]
+    {
+        error!("macOS / Windows 以外ではファイルを開く機能は未実装です");
         Ok(OpenFileResult {
             opened: false,
             app: "Unsupported".to_string(),
@@ -167,20 +192,9 @@ pub async fn open_file(params: OpenFileParams) -> Result<OpenFileResult> {
 /**
  * パスからアプリを自動判定
  */
+#[cfg(target_os = "macos")]
 fn detect_app_from_path(path: &str) -> &'static str {
-    let path_lower = path.to_lowercase();
-    if path_lower.ends_with(".afphoto") || path_lower.ends_with(".afdesign") || path_lower.ends_with(".afpub") {
-        if path_lower.ends_with(".afphoto") {
-            "Affinity Photo"
-        } else if path_lower.ends_with(".afdesign") {
-            "Affinity Designer"
-        } else {
-            "Affinity Publisher"
-        }
-    } else {
-        // デフォルトはPhoto
-        "Affinity Photo"
-    }
+    AffinityApp::from_file_path(path).app_name()
 }
 
 /**
@@ -274,9 +288,19 @@ pub async fn create_new(params: CreateNewParams) -> Result<CreateNewResult> {
         })
     }
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(windows)]
     {
-        error!("macOS以外では新規作成機能は未実装です");
+        let app_name = params.app.app_name().to_string();
+        affinity_win::launch_app(&params.app)?;
+        Ok(CreateNewResult {
+            created: true,
+            app: app_name,
+        })
+    }
+
+    #[cfg(all(not(target_os = "macos"), not(windows)))]
+    {
+        error!("macOS / Windows 以外では新規作成機能は未実装です");
         Ok(CreateNewResult {
             created: false,
             app: "Unsupported".to_string(),
@@ -388,9 +412,18 @@ pub async fn export(params: ExportParams) -> Result<ExportResult> {
         })
     }
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(all(not(target_os = "macos"), not(windows)))]
     {
-        error!("macOS以外ではエクスポート機能は未実装です");
+        error!("macOS / Windows 以外ではエクスポート機能は未実装です");
+        Ok(ExportResult {
+            exported: false,
+            path: params.path,
+        })
+    }
+
+    #[cfg(windows)]
+    {
+        error!("Windows ではエクスポートは未実装です（macOS AppleScript 相当の自動化が必要）");
         Ok(ExportResult {
             exported: false,
             path: params.path,
@@ -475,9 +508,18 @@ pub async fn apply_filter(params: ApplyFilterParams) -> Result<ApplyFilterResult
         })
     }
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(windows)]
     {
-        error!("macOS以外ではフィルター適用機能は未実装です");
+        error!("Windows ではフィルター適用は未実装です");
+        Ok(ApplyFilterResult {
+            applied: false,
+            filter_name: params.filter_name,
+        })
+    }
+
+    #[cfg(all(not(target_os = "macos"), not(windows)))]
+    {
+        error!("macOS / Windows 以外ではフィルター適用機能は未実装です");
         Ok(ApplyFilterResult {
             applied: false,
             filter_name: params.filter_name,
@@ -545,9 +587,19 @@ pub async fn get_active_document() -> Result<ActiveDocumentInfo> {
         }
     }
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(windows)]
     {
-        error!("macOS以外ではアクティブドキュメント取得機能は未実装です");
+        error!("Windows ではアクティブドキュメント取得は未実装です");
+        Ok(ActiveDocumentInfo {
+            is_open: false,
+            name: None,
+            path: None,
+        })
+    }
+
+    #[cfg(all(not(target_os = "macos"), not(windows)))]
+    {
+        error!("macOS / Windows 以外ではアクティブドキュメント取得機能は未実装です");
         Ok(ActiveDocumentInfo {
             is_open: false,
             name: None,
@@ -597,9 +649,17 @@ pub async fn close_document() -> Result<CloseDocumentResult> {
         })
     }
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(windows)]
     {
-        error!("macOS以外ではドキュメントを閉じる機能は未実装です");
+        error!("Windows ではドキュメントを閉じる操作は未実装です");
+        Ok(CloseDocumentResult {
+            closed: false,
+        })
+    }
+
+    #[cfg(all(not(target_os = "macos"), not(windows)))]
+    {
+        error!("macOS / Windows 以外ではドキュメントを閉じる機能は未実装です");
         Ok(CloseDocumentResult {
             closed: false,
         })
@@ -719,77 +779,37 @@ pub async fn draw_pikachu(params: DrawPikachuParams) -> Result<DrawPikachuResult
         })
     }
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(windows)]
     {
-        error!("macOS以外ではピカチュウ描画機能は未実装です");
+        let width = params.width.unwrap_or(800);
+        let height = params.height.unwrap_or(800);
+        let output_path = if let Some(path) = params.output_path {
+            PathBuf::from(path)
+        } else {
+            let mut temp_path = std::env::temp_dir();
+            temp_path.push("pikachu.svg");
+            temp_path
+        };
+        let svg_content = generate_pikachu_svg(width, height);
+        fs::write(&output_path, svg_content)
+            .context(format!("SVGファイルの保存に失敗しました: {}", output_path.display()))?;
+        let app_name = affinity_win::open_path_with_photo_fallback(&output_path)?;
+        Ok(DrawPikachuResult {
+            created: true,
+            file_path: output_path.to_string_lossy().to_string(),
+            app: app_name,
+        })
+    }
+
+    #[cfg(all(not(target_os = "macos"), not(windows)))]
+    {
+        error!("macOS / Windows 以外ではピカチュウ描画機能は未実装です");
         Ok(DrawPikachuResult {
             created: false,
             file_path: "".to_string(),
             app: "Unsupported".to_string(),
         })
     }
-}
-
-/**
- * 利用可能なAffinityアプリを検出
- */
-#[cfg(target_os = "macos")]
-async fn detect_available_affinity_app() -> Option<String> {
-    // まず、アプリケーションがインストールされているか確認
-    let apps = vec!["Affinity Photo", "Affinity Designer", "Affinity Publisher"];
-    
-    for app in &apps {
-        let script = format!(
-            r#"
-            try
-                tell application "Finder"
-                    exists application file "{}" of folder "Applications" of startup disk
-                end tell
-            on error
-                false
-            end try
-            "#,
-            format!("{}:{}", app, app)
-        );
-        
-        match run_applescript(&script).await {
-            Ok(result) if result.trim() == "true" => {
-                return Some(app.to_string());
-            }
-            _ => {}
-        }
-    }
-    
-    // アプリケーションが起動しているか確認
-    for app in &apps {
-        let script = format!(
-            r#"
-            try
-                tell application "System Events"
-                    exists application process "{}"
-                end tell
-            on error
-                false
-            end try
-            "#,
-            app
-        );
-        
-        match run_applescript(&script).await {
-            Ok(result) if result.trim() == "true" => {
-                return Some(app.to_string());
-            }
-            _ => {}
-        }
-    }
-    
-    // デフォルトはPhoto（通常はインストールされている）
-    Some("Affinity Photo".to_string())
-}
-
-#[cfg(not(target_os = "macos"))]
-async fn detect_available_affinity_app() -> Option<String> {
-    None
 }
 
 /**
@@ -1246,9 +1266,18 @@ pub async fn draw_shape(params: DrawShapeParams) -> Result<DrawShapeResult> {
         })
     }
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(windows)]
     {
-        error!("macOS以外では図形描画機能は未実装です");
+        error!("Windows では図形描画は未実装です");
+        Ok(DrawShapeResult {
+            drawn: false,
+            shape_type: format!("{:?}", params.shape_type),
+        })
+    }
+
+    #[cfg(all(not(target_os = "macos"), not(windows)))]
+    {
+        error!("macOS / Windows 以外では図形描画機能は未実装です");
         Ok(DrawShapeResult {
             drawn: false,
             shape_type: format!("{:?}", params.shape_type),
@@ -1289,11 +1318,6 @@ async fn detect_running_affinity_app() -> Option<String> {
     // アプリケーションが起動していない場合、デフォルトでPhotoを返す（起動を試みる）
     // Affinity.appが存在する場合は、それを優先
     Some("Affinity".to_string())
-}
-
-#[cfg(not(target_os = "macos"))]
-async fn detect_running_affinity_app() -> Option<String> {
-    None
 }
 
 /**
@@ -1414,11 +1438,6 @@ fn generate_shape_drawing_script(app_name: &str, params: &DrawShapeParams) -> Re
     Ok(script)
 }
 
-#[cfg(not(target_os = "macos"))]
-fn generate_shape_drawing_script(_app_name: &str, _params: &DrawShapeParams) -> Result<String> {
-    anyhow::bail!("macOS以外では図形描画スクリプト生成は未実装です")
-}
-
 /**
  * テキストを追加するパラメータ
  */
@@ -1507,9 +1526,17 @@ pub async fn add_text(params: AddTextParams) -> Result<AddTextResult> {
         })
     }
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(windows)]
     {
-        error!("macOS以外ではテキスト追加機能は未実装です");
+        error!("Windows ではテキスト追加は未実装です");
+        Ok(AddTextResult {
+            added: false,
+        })
+    }
+
+    #[cfg(all(not(target_os = "macos"), not(windows)))]
+    {
+        error!("macOS / Windows 以外ではテキスト追加機能は未実装です");
         Ok(AddTextResult {
             added: false,
         })
@@ -1587,9 +1614,17 @@ pub async fn change_color(params: ChangeColorParams) -> Result<ChangeColorResult
         })
     }
 
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(windows)]
     {
-        error!("macOS以外では色変更機能は未実装です");
+        error!("Windows では色変更は未実装です");
+        Ok(ChangeColorResult {
+            changed: false,
+        })
+    }
+
+    #[cfg(all(not(target_os = "macos"), not(windows)))]
+    {
+        error!("macOS / Windows 以外では色変更機能は未実装です");
         Ok(ChangeColorResult {
             changed: false,
         })
@@ -1600,6 +1635,11 @@ pub async fn change_color(params: ChangeColorParams) -> Result<ChangeColorResult
  * Affinityブリッジツールのスタブ初期化
  */
 pub async fn init_stub() -> anyhow::Result<()> {
+    #[cfg(target_os = "macos")]
     debug!("affinity bridge initialized. macOS: AppleScript support enabled. 16-parallel processing ready. Pikachu drawing ready. Shape drawing ready.");
+    #[cfg(windows)]
+    debug!("affinity bridge initialized. Windows: open/create/Pikachu via installed Affinity exe; export/UI automation not yet implemented.");
+    #[cfg(all(not(target_os = "macos"), not(windows)))]
+    debug!("affinity bridge initialized. Non-macOS non-Windows: limited Affinity support.");
     Ok(())
 }

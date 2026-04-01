@@ -13,6 +13,8 @@
  */
 pub mod canva;
 pub mod affinity;
+#[cfg(windows)]
+pub(crate) mod affinity_win;
 
 pub async fn register_all() -> anyhow::Result<()> {
     // SDK導入時：
