@@ -10,7 +10,7 @@
  *   - create_new: 新規ドキュメント作成
  *   - export: エクスポート
  *   - apply_filter: フィルター適用
- *   - get_active_document: アクティブドキュメント取得
+ *   - get_active_document: アクティブドキュメント取得（Windows はウィンドウタイトルから推定）
  *   - close_document: ドキュメントを閉じる
  * 
  * エラー処理:
@@ -26,7 +26,7 @@ use futures::future::join_all;
 use std::process::Command;
 #[cfg(target_os = "macos")]
 use std::sync::Arc;
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", windows))]
 use tokio::task;
 use std::fs;
 use std::path::PathBuf;
@@ -530,13 +530,13 @@ pub async fn apply_filter(params: ApplyFilterParams) -> Result<ApplyFilterResult
 /**
  * アクティブドキュメント情報
  */
-#[derive(Debug, Serialize, JsonSchema)]
+#[derive(Debug, Clone, Serialize, JsonSchema)]
 pub struct ActiveDocumentInfo {
-    /// ドキュメントが開いているかどうか
+    /// Affinity のメイン編集セッションが有効（ウィンドウが取れている）か。
+    /// Windows では Affinity 3 ドック時、タイトルバーにドキュメント名が出ないため `name`/`path` は null のままになることがある。
     pub is_open: bool,
-    /// ドキュメント名
+    /// 分かった場合のみ（タイトルや従来の ` - Affinity Photo` 形式から）
     pub name: Option<String>,
-    /// ドキュメントパス
     pub path: Option<String>,
 }
 
@@ -589,12 +589,9 @@ pub async fn get_active_document() -> Result<ActiveDocumentInfo> {
 
     #[cfg(windows)]
     {
-        error!("Windows ではアクティブドキュメント取得は未実装です");
-        Ok(ActiveDocumentInfo {
-            is_open: false,
-            name: None,
-            path: None,
-        })
+        task::spawn_blocking(|| affinity_win::get_active_document_blocking())
+            .await
+            .context("get_active_document: ブロッキングタスクの完了待機に失敗しました")?
     }
 
     #[cfg(all(not(target_os = "macos"), not(windows)))]

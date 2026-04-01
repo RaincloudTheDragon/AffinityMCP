@@ -20,8 +20,43 @@ use tracing::Level;
 use anyhow::Context;
 use std::io::IsTerminal;
 
+use futures::StreamExt;
+use jsonrpc_core::IoHandler;
+use tokio::io::{self, AsyncWriteExt};
+use tokio_util::codec::{FramedRead, LinesCodec};
+
 mod mcp;
 mod tools;
+
+/// `jsonrpc-stdio-server` クレートは応答なしの通知でも stdout に改行だけ送り、
+/// Cursor が空行を JSON としてパースして "Unexpected end of JSON input" になる。
+/// 応答が空のときは何も書かない。
+async fn run_stdio_jsonrpc(io: IoHandler) {
+    let mut stdin = FramedRead::new(io::stdin(), LinesCodec::new());
+    let mut stdout = io::stdout();
+
+    while let Some(line) = stdin.next().await {
+        match line {
+            Ok(line) => {
+                if line.trim().is_empty() {
+                    continue;
+                }
+                let response = io.handle_request(&line).await;
+                if let Some(s) = response {
+                    if s.is_empty() {
+                        continue;
+                    }
+                    let mut sanitized = s.replace('\n', "");
+                    sanitized.push('\n');
+                    if let Err(e) = stdout.write_all(sanitized.as_bytes()).await {
+                        tracing::warn!(error = ?e, "stdout write");
+                    }
+                }
+            }
+            Err(e) => tracing::warn!(error = ?e, "stdin read"),
+        }
+    }
+}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -57,10 +92,7 @@ async fn main() -> anyhow::Result<()> {
     // STDIOサーバー起動
     tracing::debug!(server = %name, "MCP server ready. Listening for JSON-RPC requests on STDIO.");
     
-    let server = jsonrpc_stdio_server::ServerBuilder::new(io)
-        .build();
-
-    server.await;
+    run_stdio_jsonrpc(io).await;
 
     tracing::debug!("MCP server shutting down.");
     Ok(())

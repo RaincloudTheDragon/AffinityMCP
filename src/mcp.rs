@@ -24,6 +24,7 @@ use crate::tools::{affinity, canva};
 /**
  * MCP Initialize リクエスト
  */
+#[allow(dead_code)] // 将来の型付きパース用（現状は Value から手動パース）
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InitializeParams {
@@ -39,6 +40,7 @@ pub struct InitializeParams {
 /**
  * クライアント情報
  */
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientInfo {
@@ -112,6 +114,7 @@ pub struct Tool {
 /**
  * MCP Tool Call パラメータ
  */
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ToolCallParams {
@@ -184,9 +187,17 @@ pub fn build_server(name: String) -> Result<IoHandler> {
         }
     });
 
-    // initialized 通知（空実装）
+    // initialized 通知（空実装）。MCP 2024-11-05 では `notifications/initialized` が正式名。
     io.add_notification("initialized", |_params: Params| {
         tracing::debug!("MCP initialized notification received");
+    });
+    io.add_notification("notifications/initialized", |_params: Params| {
+        tracing::debug!("MCP notifications/initialized received");
+    });
+
+    // MCP 仕様: ping は空オブジェクトを返す（接続ヘルス用）
+    io.add_method("ping", |_params: Params| {
+        async move { Ok(json!({})) }
     });
 
     // tools/list メソッド
@@ -549,6 +560,28 @@ fn get_all_tools() -> Vec<Tool> {
 }
 
 /**
+ * Cursor 等が `affinity.get_active_document` を `affinity_get_active_document` のように送る場合の正規化。
+ */
+fn normalize_tool_name(name: &str) -> String {
+    let name = name.trim();
+    // Cursor が付けるプレフィックス（ツール id）
+    let name = name
+        .strip_prefix("mcp_")
+        .or_else(|| name.strip_prefix("MCP_"))
+        .unwrap_or(name);
+    if name.contains('.') {
+        return name.to_string();
+    }
+    if let Some(rest) = name.strip_prefix("affinity_") {
+        return format!("affinity.{rest}");
+    }
+    if let Some(rest) = name.strip_prefix("canva_") {
+        return format!("canva.{rest}");
+    }
+    name.to_string()
+}
+
+/**
  * ツールコールを処理
  * 
  * 引数:
@@ -562,7 +595,8 @@ fn get_all_tools() -> Vec<Tool> {
  *   ツール実行に失敗した場合はエラーを返す
  */
 async fn handle_tool_call(name: &str, arguments: Value) -> Result<Value> {
-    match name {
+    let name = normalize_tool_name(name);
+    match name.as_str() {
         "affinity.open_file" => {
             let params: affinity::OpenFileParams = serde_json::from_value(arguments)
                 .context("affinity.open_file: 引数のパースに失敗しました")?;

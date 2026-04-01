@@ -16,15 +16,22 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 schemars = "0.8"
 
-# MCP JSON-RPC実装
+# MCP JSON-RPC実装（stdio は main で実装 — 通知のみのリクエストで空行を出さない）
 jsonrpc-core = "18"
-jsonrpc-stdio-server = "18"
+tokio-util = { version = "0.7", features = ["codec"] }
 
 # UUID生成用（Canvaスタブ実装）
 uuid = { version = "1", features = ["v4", "serde"] }
 
 # 非同期処理用
 futures = "0.3"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_Threading",
+] }
 
 [profile.release]
 lto = "fat"

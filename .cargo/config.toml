@@ -1,0 +1,4 @@
+# Pin build output to ./target (overrides parent workspaces that set target-dir).
+# Note: if CARGO_TARGET_DIR is set in your environment, it takes precedence — unset it to use this.
+[build]
+target-dir = "target"

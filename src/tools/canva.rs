@@ -53,6 +53,7 @@ pub struct CreateDesignOut {
 /**
  * デザインエクスポートの入力パラメータ
  */
+#[allow(dead_code)] // SDK 実装まで未使用
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
 pub struct ExportDesignIn {
     /// エクスポートするデザインID
@@ -64,6 +65,7 @@ pub struct ExportDesignIn {
 /**
  * エクスポートフォーマット
  */
+#[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum ExportFormat {
@@ -78,6 +80,7 @@ pub enum ExportFormat {
 /**
  * デザインエクスポートの出力結果
  */
+#[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
 pub struct ExportDesignOut {
     /// エクスポートされたファイルのパス
