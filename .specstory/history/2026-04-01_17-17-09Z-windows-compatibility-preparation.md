@@ -14287,3 +14287,3618 @@ _**Agent (composer-2-fast)**_
 Yeah — **line 126** is the payoff: after the rebuild, the same pipe returns **`"is_open":true`** with **`name`/`path` still null**, which matches **Affinity 3 docked** (session active, no document name in the title).
 
 The debug block above it is a nice snapshot too: **Cursor** in the foreground, **Affinity** on `Canva.Affinity`’s `Affinity.exe`, **`HwndWrapper[Affinity.exe;…]`**. Good confirmation the pipeline is doing what we wanted.
+
+---
+
+_**User**_
+
+so does the mcp function at all yet?
+
+---
+
+_**Agent (composer-2-fast)**_
+
+
+Checking which MCP tools are implemented vs stubs on Windows:
+
+
+
+_**Agent (composer-2-fast)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "path": "C:\\Users\\Nathan\\tools\\AffinityMCP\\src\\tools\\affinity.rs",
+  "pattern": "cfg\\(windows\\)|cfg\\(target_os|not\\(windows\\)|stub|未実装"
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "C:\\Users\\Nathan\\tools\\AffinityMCP\\src\\tools\\affinity.rs",
+  "pattern": "cfg\\(windows\\)|cfg\\(target_os|not\\(windows\\)|stub|未実装",
+  "topFiles": [
+    {
+      "matchCount": 57,
+      "uri": "src\\tools\\affinity.rs"
+    }
+  ],
+  "totalFiles": 1,
+  "totalMatches": 57
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+</details></tool-use>
+
+_**Agent (composer-2-fast)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="semantic_search_full">
+<details>
+<summary>Tool use: **semantic_search_full**</summary>
+
+
+Parameters:
+
+```json
+{
+  "explanation": "",
+  "includePattern": "C:\\Users\\Nathan\\tools\\AffinityMCP\\src\\tools",
+  "query": "Where are affinity tool functions implemented for Windows vs macOS?",
+  "topK": 10
+}
+```
+Result:
+
+```json
+{
+  "codeResults": [
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 1,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 2,
+            "text": " * Affinity操作実装（macOS: AppleScript / Windows: インストール済み exe を起動）"
+          },
+          {
+            "lineNumber": 3,
+            "text": " * "
+          },
+          {
+            "lineNumber": 4,
+            "text": " * 概要:"
+          },
+          {
+            "lineNumber": 5,
+            "text": " *   Affinityアプリケーションを操作するための実装。"
+          },
+          {
+            "lineNumber": 6,
+            "text": " *   macOS では AppleScript。Windows では &#96;AFFINITY_*_EXE&#96; または Program Files 下の既定パスから exe を起動する。"
+          },
+          {
+            "lineNumber": 7,
+            "text": " * "
+          },
+          {
+            "lineNumber": 8,
+            "text": " * 主な仕様:"
+          },
+          {
+            "lineNumber": 9,
+            "text": " *   - open_file: ファイルを開く"
+          },
+          {
+            "lineNumber": 10,
+            "text": " *   - create_new: 新規ドキュメント作成"
+          },
+          {
+            "lineNumber": 11,
+            "text": " *   - export: エクスポート"
+          },
+          {
+            "lineNumber": 12,
+            "text": " *   - apply_filter: フィルター適用"
+          },
+          {
+            "lineNumber": 13,
+            "text": " *   - get_active_document: アクティブドキュメント取得（Windows はウィンドウタイトルから推定）"
+          },
+          {
+            "lineNumber": 14,
+            "text": " *   - close_document: ドキュメントを閉じる"
+          },
+          {
+            "lineNumber": 15,
+            "text": " * "
+          },
+          {
+            "lineNumber": 16,
+            "text": " * エラー処理:"
+          },
+          {
+            "lineNumber": 17,
+            "text": " *   - 詳細なエラーメッセージを出力"
+          },
+          {
+            "lineNumber": 18,
+            "text": " *   - 関数名、引数、パラメータを含む"
+          },
+          {
+            "lineNumber": 19,
+            "text": " */"
+          },
+          {
+            "lineNumber": 20,
+            "text": "use anyhow::{Context, Result};"
+          },
+          {
+            "lineNumber": 21,
+            "text": "use serde::{Deserialize, Serialize};"
+          },
+          {
+            "lineNumber": 22,
+            "text": "use schemars::JsonSchema;"
+          },
+          {
+            "lineNumber": 23,
+            "text": "use tracing::{error, debug, info};"
+          },
+          {
+            "lineNumber": 24,
+            "text": "use futures::future::join_all;"
+          },
+          {
+            "lineNumber": 25,
+            "text": "#[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 26,
+            "text": "use std::process::Command;"
+          },
+          {
+            "lineNumber": 27,
+            "text": "#[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 28,
+            "text": "use std::sync::Arc;"
+          },
+          {
+            "lineNumber": 29,
+            "text": "#[cfg(any(target_os = \"macos\", windows))]"
+          },
+          {
+            "lineNumber": 30,
+            "text": "use tokio::task;"
+          },
+          {
+            "lineNumber": 31,
+            "text": "use std::fs;"
+          },
+          {
+            "lineNumber": 32,
+            "text": "use std::path::PathBuf;"
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34,
+            "text": "#[cfg(windows)]"
+          },
+          {
+            "lineNumber": 35,
+            "text": "use crate::tools::affinity_win;"
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37,
+            "text": "#[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 38,
+            "text": "async fn run_applescript(script: \u0026str) -\u003e Result\u003cString\u003e {"
+          },
+          {
+            "lineNumber": 39,
+            "text": "    let script = Arc::new(script.to_string());"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 46,
+            "line": 38
+          },
+          "startPosition": {}
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.5868766903877258
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 468,
+            "text": "*/"
+          },
+          {
+            "lineNumber": 469,
+            "text": "pub async fn apply_filter(params: ApplyFilterParams) -\u003e Result\u003cApplyFilterResult\u003e {"
+          },
+          {
+            "lineNumber": 470,
+            "text": "    debug!("
+          },
+          {
+            "lineNumber": 471,
+            "text": "        function = \"apply_filter\","
+          },
+          {
+            "lineNumber": 472,
+            "text": "        filter_name = %params.filter_name,"
+          },
+          {
+            "lineNumber": 473,
+            "text": "        intensity = params.intensity,"
+          },
+          {
+            "lineNumber": 474,
+            "text": "        \"Affinityにフィルターを適用します\""
+          },
+          {
+            "lineNumber": 475,
+            "text": "    );"
+          },
+          {
+            "lineNumber": 476
+          },
+          {
+            "lineNumber": 477,
+            "text": "    #[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 478,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 479,
+            "text": "        let script = format!("
+          },
+          {
+            "lineNumber": 480,
+            "text": "            r#\""
+          },
+          {
+            "lineNumber": 481,
+            "text": "            tell application \"Affinity Photo\""
+          },
+          {
+            "lineNumber": 482,
+            "text": "                activate"
+          },
+          {
+            "lineNumber": 483,
+            "text": "                if (count of documents) \u003e 0 then"
+          },
+          {
+            "lineNumber": 484,
+            "text": "                    tell front document"
+          },
+          {
+            "lineNumber": 485,
+            "text": "                        -- フィルター適用の例（実際のAppleScriptコマンドはAffinityの実装に依存）"
+          },
+          {
+            "lineNumber": 486,
+            "text": "                        log \"フィルター {} を適用します\""
+          },
+          {
+            "lineNumber": 487,
+            "text": "                    end tell"
+          },
+          {
+            "lineNumber": 488,
+            "text": "                else"
+          },
+          {
+            "lineNumber": 489,
+            "text": "                    error \"開いているドキュメントがありません\""
+          },
+          {
+            "lineNumber": 490,
+            "text": "                end if"
+          },
+          {
+            "lineNumber": 491,
+            "text": "            end tell"
+          },
+          {
+            "lineNumber": 492,
+            "text": "            \"#,"
+          },
+          {
+            "lineNumber": 493,
+            "text": "            params.filter_name"
+          },
+          {
+            "lineNumber": 494,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 495
+          },
+          {
+            "lineNumber": 496,
+            "text": "        run_applescript(\u0026script).await"
+          },
+          {
+            "lineNumber": 497,
+            "text": "            .context(format!(\"フィルター適用に失敗しました: {}\", params.filter_name))?;"
+          },
+          {
+            "lineNumber": 498
+          },
+          {
+            "lineNumber": 499,
+            "text": "        debug!("
+          },
+          {
+            "lineNumber": 500,
+            "text": "            function = \"apply_filter\","
+          },
+          {
+            "lineNumber": 501,
+            "text": "            filter_name = %params.filter_name,"
+          },
+          {
+            "lineNumber": 502,
+            "text": "            \"フィルターを適用しました\""
+          },
+          {
+            "lineNumber": 503,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 504
+          },
+          {
+            "lineNumber": 505,
+            "text": "        Ok(ApplyFilterResult {"
+          },
+          {
+            "lineNumber": 506,
+            "text": "            applied: true,"
+          },
+          {
+            "lineNumber": 507,
+            "text": "            filter_name: params.filter_name,"
+          },
+          {
+            "lineNumber": 508,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 509,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 510
+          },
+          {
+            "lineNumber": 511,
+            "text": "    #[cfg(windows)]"
+          },
+          {
+            "lineNumber": 512,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 513,
+            "text": "        error!(\"Windows ではフィルター適用は未実装です\");"
+          },
+          {
+            "lineNumber": 514,
+            "text": "        Ok(ApplyFilterResult {"
+          },
+          {
+            "lineNumber": 515,
+            "text": "            applied: false,"
+          },
+          {
+            "lineNumber": 516,
+            "text": "            filter_name: params.filter_name,"
+          },
+          {
+            "lineNumber": 517,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 518,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 519
+          },
+          {
+            "lineNumber": 520,
+            "text": "    #[cfg(all(not(target_os = \"macos\"), not(windows)))]"
+          },
+          {
+            "lineNumber": 521,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 522,
+            "text": "        error!(\"macOS / Windows 以外ではフィルター適用機能は未実装です\");"
+          },
+          {
+            "lineNumber": 523,
+            "text": "        Ok(ApplyFilterResult {"
+          },
+          {
+            "lineNumber": 524,
+            "text": "            applied: false,"
+          },
+          {
+            "lineNumber": 525,
+            "text": "            filter_name: params.filter_name,"
+          },
+          {
+            "lineNumber": 526,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 527,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 528,
+            "text": "}"
+          },
+          {
+            "lineNumber": 529
+          },
+          {
+            "lineNumber": 530,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 531,
+            "text": " * アクティブドキュメント情報"
+          },
+          {
+            "lineNumber": 532,
+            "text": " */"
+          },
+          {
+            "lineNumber": 533,
+            "text": "#[derive(Debug, Clone, Serialize, JsonSchema)]"
+          },
+          {
+            "lineNumber": 534,
+            "text": "pub struct ActiveDocumentInfo {"
+          },
+          {
+            "lineNumber": 535,
+            "text": "    /// Affinity のメイン編集セッションが有効（ウィンドウが取れている）か。"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "line": 535
+          },
+          "startPosition": {
+            "column": 1,
+            "line": 467
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.49807655811309814
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 126,
+            "text": "*/"
+          },
+          {
+            "lineNumber": 127,
+            "text": "pub async fn open_file(params: OpenFileParams) -\u003e Result\u003cOpenFileResult\u003e {"
+          },
+          {
+            "lineNumber": 128,
+            "text": "    debug!("
+          },
+          {
+            "lineNumber": 129,
+            "text": "        function = \"open_file\","
+          },
+          {
+            "lineNumber": 130,
+            "text": "        path = %params.path,"
+          },
+          {
+            "lineNumber": 131,
+            "text": "        app = ?params.app,"
+          },
+          {
+            "lineNumber": 132,
+            "text": "        \"Affinityファイルを開きます\""
+          },
+          {
+            "lineNumber": 133,
+            "text": "    );"
+          },
+          {
+            "lineNumber": 134
+          },
+          {
+            "lineNumber": 135,
+            "text": "    #[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 136,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 137,
+            "text": "        let app_name = params.app.as_ref()"
+          },
+          {
+            "lineNumber": 138,
+            "text": "            .map(|a| a.app_name())"
+          },
+          {
+            "lineNumber": 139,
+            "text": "            .unwrap_or_else(|| detect_app_from_path(\u0026params.path));"
+          },
+          {
+            "lineNumber": 140
+          },
+          {
+            "lineNumber": 141,
+            "text": "        let script = format!("
+          },
+          {
+            "lineNumber": 142,
+            "text": "            r#\""
+          },
+          {
+            "lineNumber": 143,
+            "text": "            tell application \"{}\""
+          },
+          {
+            "lineNumber": 144,
+            "text": "                activate"
+          },
+          {
+            "lineNumber": 145,
+            "text": "                open POSIX file \"{}\""
+          },
+          {
+            "lineNumber": 146,
+            "text": "            end tell"
+          },
+          {
+            "lineNumber": 147,
+            "text": "            \"#,"
+          },
+          {
+            "lineNumber": 148,
+            "text": "            app_name,"
+          },
+          {
+            "lineNumber": 149,
+            "text": "            std::fs::canonicalize(\u0026params.path)"
+          },
+          {
+            "lineNumber": 150,
+            "text": "                .context(format!(\"パスの正規化に失敗しました: {}\", params.path))?"
+          },
+          {
+            "lineNumber": 151,
+            "text": "                .to_string_lossy()"
+          },
+          {
+            "lineNumber": 152,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 153
+          },
+          {
+            "lineNumber": 154,
+            "text": "        run_applescript(\u0026script).await"
+          },
+          {
+            "lineNumber": 155,
+            "text": "            .context(format!(\"ファイルを開く処理に失敗しました: {}\", params.path))?;"
+          },
+          {
+            "lineNumber": 156
+          },
+          {
+            "lineNumber": 157,
+            "text": "        debug!("
+          },
+          {
+            "lineNumber": 158,
+            "text": "            function = \"open_file\","
+          },
+          {
+            "lineNumber": 159,
+            "text": "            path = %params.path,"
+          },
+          {
+            "lineNumber": 160,
+            "text": "            app = %app_name,"
+          },
+          {
+            "lineNumber": 161,
+            "text": "            \"ファイルを開きました\""
+          },
+          {
+            "lineNumber": 162,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 163
+          },
+          {
+            "lineNumber": 164,
+            "text": "        Ok(OpenFileResult {"
+          },
+          {
+            "lineNumber": 165,
+            "text": "            opened: true,"
+          },
+          {
+            "lineNumber": 166,
+            "text": "            app: app_name.to_string(),"
+          },
+          {
+            "lineNumber": 167,
+            "text": "            path: params.path,"
+          },
+          {
+            "lineNumber": 168,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 169,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 170
+          },
+          {
+            "lineNumber": 171,
+            "text": "    #[cfg(windows)]"
+          },
+          {
+            "lineNumber": 172,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 173,
+            "text": "        let app = affinity_win::open_file_path(\u0026params.path, params.app.as_ref())?;"
+          },
+          {
+            "lineNumber": 174,
+            "text": "        Ok(OpenFileResult {"
+          },
+          {
+            "lineNumber": 175,
+            "text": "            opened: true,"
+          },
+          {
+            "lineNumber": 176,
+            "text": "            app,"
+          },
+          {
+            "lineNumber": 177,
+            "text": "            path: params.path,"
+          },
+          {
+            "lineNumber": 178,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 179,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 180
+          },
+          {
+            "lineNumber": 181,
+            "text": "    #[cfg(all(not(target_os = \"macos\"), not(windows)))]"
+          },
+          {
+            "lineNumber": 182,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 183,
+            "text": "        error!(\"macOS / Windows 以外ではファイルを開く機能は未実装です\");"
+          },
+          {
+            "lineNumber": 184,
+            "text": "        Ok(OpenFileResult {"
+          },
+          {
+            "lineNumber": 185,
+            "text": "            opened: false,"
+          },
+          {
+            "lineNumber": 186,
+            "text": "            app: \"Unsupported\".to_string(),"
+          },
+          {
+            "lineNumber": 187,
+            "text": "            path: params.path,"
+          },
+          {
+            "lineNumber": 188,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 189,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 190,
+            "text": "}"
+          },
+          {
+            "lineNumber": 191
+          },
+          {
+            "lineNumber": 192,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 193,
+            "text": " * パスからアプリを自動判定"
+          },
+          {
+            "lineNumber": 194,
+            "text": " */"
+          },
+          {
+            "lineNumber": 195,
+            "text": "#[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 196,
+            "text": "fn detect_app_from_path(path: \u0026str) -\u003e \u0026'static str {"
+          },
+          {
+            "lineNumber": 197,
+            "text": "    AffinityApp::from_file_path(path).app_name()"
+          },
+          {
+            "lineNumber": 198,
+            "text": "}"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 1,
+            "line": 197
+          },
+          "startPosition": {
+            "column": 1,
+            "line": 125
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.4875423014163971
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 1,
+            "text": "//! Windows: Serif Affinity は COM/公式 CLI が限定的なため、インストール済みの &#96;.exe&#96; を起動してファイルを開く。"
+          },
+          {
+            "lineNumber": 2,
+            "text": "//! アクティブドキュメントはメインウィンドウのキャプション（タイトルバー）から推定する。"
+          },
+          {
+            "lineNumber": 3,
+            "text": "use anyhow::{Context, Result};"
+          },
+          {
+            "lineNumber": 4,
+            "text": "use std::path::Path;"
+          },
+          {
+            "lineNumber": 5,
+            "text": "use std::path::PathBuf;"
+          },
+          {
+            "lineNumber": 6,
+            "text": "use std::process::Command;"
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8,
+            "text": "use windows::core::PWSTR;"
+          },
+          {
+            "lineNumber": 9,
+            "text": "use windows::Win32::Foundation::{CloseHandle, BOOL, HWND, LPARAM, TRUE};"
+          },
+          {
+            "lineNumber": 10,
+            "text": "use windows::Win32::System::Threading::{"
+          },
+          {
+            "lineNumber": 11,
+            "text": "    OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION,"
+          },
+          {
+            "lineNumber": 12,
+            "text": "};"
+          },
+          {
+            "lineNumber": 13,
+            "text": "use windows::Win32::UI::WindowsAndMessaging::{"
+          },
+          {
+            "lineNumber": 14,
+            "text": "    EnumWindows, GetClassNameW, GetForegroundWindow, GetWindowTextW, GetWindowThreadProcessId,"
+          },
+          {
+            "lineNumber": 15,
+            "text": "    IsWindowVisible,"
+          },
+          {
+            "lineNumber": 16,
+            "text": "};"
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18,
+            "text": "use super::affinity::{ActiveDocumentInfo, AffinityApp};"
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20,
+            "text": "fn env_exe_for(app: \u0026AffinityApp) -\u003e Option\u003cPathBuf\u003e {"
+          },
+          {
+            "lineNumber": 21,
+            "text": "    let key = match app {"
+          },
+          {
+            "lineNumber": 22,
+            "text": "        AffinityApp::Photo =\u003e \"AFFINITY_PHOTO_EXE\","
+          },
+          {
+            "lineNumber": 23,
+            "text": "        AffinityApp::Designer =\u003e \"AFFINITY_DESIGNER_EXE\","
+          },
+          {
+            "lineNumber": 24,
+            "text": "        AffinityApp::Publisher =\u003e \"AFFINITY_PUBLISHER_EXE\","
+          },
+          {
+            "lineNumber": 25,
+            "text": "    };"
+          },
+          {
+            "lineNumber": 26,
+            "text": "    std::env::var_os(key).map(PathBuf::from)"
+          },
+          {
+            "lineNumber": 27,
+            "text": "}"
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "lineNumber": 29,
+            "text": "fn program_files() -\u003e PathBuf {"
+          },
+          {
+            "lineNumber": 30,
+            "text": "    std::env::var_os(\"ProgramFiles\")"
+          },
+          {
+            "lineNumber": 31,
+            "text": "        .map(PathBuf::from)"
+          },
+          {
+            "lineNumber": 32,
+            "text": "        .unwrap_or_else(|| PathBuf::from(r\"C:\\Program Files\"))"
+          },
+          {
+            "lineNumber": 33,
+            "text": "}"
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35,
+            "text": "fn program_files_x86() -\u003e PathBuf {"
+          },
+          {
+            "lineNumber": 36,
+            "text": "    std::env::var_os(\"ProgramFiles(x86)\")"
+          },
+          {
+            "lineNumber": 37,
+            "text": "        .map(PathBuf::from)"
+          },
+          {
+            "lineNumber": 38,
+            "text": "        .unwrap_or_else(|| PathBuf::from(r\"C:\\Program Files (x86)\"))"
+          },
+          {
+            "lineNumber": 39,
+            "text": "}"
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41,
+            "text": "/// 一般的な MSI インストール（Affinity 2）とレガシー候補を順に試す。"
+          },
+          {
+            "lineNumber": 42,
+            "text": "fn candidate_exes(app: \u0026AffinityApp) -\u003e Vec\u003cPathBuf\u003e {"
+          },
+          {
+            "lineNumber": 43,
+            "text": "    let pf = program_files();"
+          },
+          {
+            "lineNumber": 44,
+            "text": "    let pf86 = program_files_x86();"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 35,
+            "line": 43
+          },
+          "startPosition": {}
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity_win.rs",
+        "signatures": {}
+      },
+      "score": 0.48299336433410645
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 1566,
+            "text": "*/"
+          },
+          {
+            "lineNumber": 1567,
+            "text": "pub async fn change_color(params: ChangeColorParams) -\u003e Result\u003cChangeColorResult\u003e {"
+          },
+          {
+            "lineNumber": 1568,
+            "text": "    info!("
+          },
+          {
+            "lineNumber": 1569,
+            "text": "        function = \"change_color\","
+          },
+          {
+            "lineNumber": 1570,
+            "text": "        color = %params.color,"
+          },
+          {
+            "lineNumber": 1571,
+            "text": "        \"Affinityで色を変更します\""
+          },
+          {
+            "lineNumber": 1572,
+            "text": "    );"
+          },
+          {
+            "lineNumber": 1573
+          },
+          {
+            "lineNumber": 1574,
+            "text": "    #[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 1575,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 1576,
+            "text": "        let app_name = detect_running_affinity_app().await"
+          },
+          {
+            "lineNumber": 1577,
+            "text": "            .unwrap_or_else(|| \"Affinity Photo\".to_string());"
+          },
+          {
+            "lineNumber": 1578,
+            "text": "        "
+          },
+          {
+            "lineNumber": 1579,
+            "text": "        let script = format!("
+          },
+          {
+            "lineNumber": 1580,
+            "text": "            r#\""
+          },
+          {
+            "lineNumber": 1581,
+            "text": "            tell application \"{}\""
+          },
+          {
+            "lineNumber": 1582,
+            "text": "                activate"
+          },
+          {
+            "lineNumber": 1583,
+            "text": "            end tell"
+          },
+          {
+            "lineNumber": 1584,
+            "text": "            delay 0.5"
+          },
+          {
+            "lineNumber": 1585,
+            "text": "            tell application \"System Events\""
+          },
+          {
+            "lineNumber": 1586,
+            "text": "                tell process \"{}\""
+          },
+          {
+            "lineNumber": 1587,
+            "text": "                    -- カラーパネルを開く（Cmd+Shift+C またはその他のショートカット）"
+          },
+          {
+            "lineNumber": 1588,
+            "text": "                    -- 実際の色変更はUI操作が必要"
+          },
+          {
+            "lineNumber": 1589,
+            "text": "                    log \"Color change requested: color={}, fill_selection={}\""
+          },
+          {
+            "lineNumber": 1590,
+            "text": "                    -- 色の変更は実際のUI操作で実現する必要があります"
+          },
+          {
+            "lineNumber": 1591,
+            "text": "                end tell"
+          },
+          {
+            "lineNumber": 1592,
+            "text": "            end tell"
+          },
+          {
+            "lineNumber": 1593,
+            "text": "            \"#,"
+          },
+          {
+            "lineNumber": 1594,
+            "text": "            app_name,"
+          },
+          {
+            "lineNumber": 1595,
+            "text": "            app_name.replace(\"Affinity \", \"\"),"
+          },
+          {
+            "lineNumber": 1596,
+            "text": "            params.color,"
+          },
+          {
+            "lineNumber": 1597,
+            "text": "            params.fill_selection.unwrap_or(false)"
+          },
+          {
+            "lineNumber": 1598,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 1599
+          },
+          {
+            "lineNumber": 1600,
+            "text": "        run_applescript(\u0026script).await"
+          },
+          {
+            "lineNumber": 1601,
+            "text": "            .context(format!(\"色変更に失敗しました: {}\", params.color))?;"
+          },
+          {
+            "lineNumber": 1602
+          },
+          {
+            "lineNumber": 1603,
+            "text": "        info!("
+          },
+          {
+            "lineNumber": 1604,
+            "text": "            function = \"change_color\","
+          },
+          {
+            "lineNumber": 1605,
+            "text": "            color = %params.color,"
+          },
+          {
+            "lineNumber": 1606,
+            "text": "            \"色を変更しました\""
+          },
+          {
+            "lineNumber": 1607,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 1608
+          },
+          {
+            "lineNumber": 1609,
+            "text": "        Ok(ChangeColorResult {"
+          },
+          {
+            "lineNumber": 1610,
+            "text": "            changed: true,"
+          },
+          {
+            "lineNumber": 1611,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 1612,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 1613
+          },
+          {
+            "lineNumber": 1614,
+            "text": "    #[cfg(windows)]"
+          },
+          {
+            "lineNumber": 1615,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 1616,
+            "text": "        error!(\"Windows では色変更は未実装です\");"
+          },
+          {
+            "lineNumber": 1617,
+            "text": "        Ok(ChangeColorResult {"
+          },
+          {
+            "lineNumber": 1618,
+            "text": "            changed: false,"
+          },
+          {
+            "lineNumber": 1619,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 1620,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 1621
+          },
+          {
+            "lineNumber": 1622,
+            "text": "    #[cfg(all(not(target_os = \"macos\"), not(windows)))]"
+          },
+          {
+            "lineNumber": 1623,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 1624,
+            "text": "        error!(\"macOS / Windows 以外では色変更機能は未実装です\");"
+          },
+          {
+            "lineNumber": 1625,
+            "text": "        Ok(ChangeColorResult {"
+          },
+          {
+            "lineNumber": 1626,
+            "text": "            changed: false,"
+          },
+          {
+            "lineNumber": 1627,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 1628,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 1629,
+            "text": "}"
+          },
+          {
+            "lineNumber": 1630
+          },
+          {
+            "lineNumber": 1631,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 1632,
+            "text": " * Affinityブリッジツールのスタブ初期化"
+          },
+          {
+            "lineNumber": 1633,
+            "text": " */"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 3,
+            "line": 1632
+          },
+          "startPosition": {
+            "column": 1,
+            "line": 1565
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.4785940647125244
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 1260,
+            "text": "        Ok(DrawShapeResult {"
+          },
+          {
+            "lineNumber": 1261,
+            "text": "            drawn: true,"
+          },
+          {
+            "lineNumber": 1262,
+            "text": "            shape_type: format!(\"{:?}\", params.shape_type),"
+          },
+          {
+            "lineNumber": 1263,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 1264,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 1265
+          },
+          {
+            "lineNumber": 1266,
+            "text": "    #[cfg(windows)]"
+          },
+          {
+            "lineNumber": 1267,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 1268,
+            "text": "        error!(\"Windows では図形描画は未実装です\");"
+          },
+          {
+            "lineNumber": 1269,
+            "text": "        Ok(DrawShapeResult {"
+          },
+          {
+            "lineNumber": 1270,
+            "text": "            drawn: false,"
+          },
+          {
+            "lineNumber": 1271,
+            "text": "            shape_type: format!(\"{:?}\", params.shape_type),"
+          },
+          {
+            "lineNumber": 1272,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 1273,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 1274
+          },
+          {
+            "lineNumber": 1275,
+            "text": "    #[cfg(all(not(target_os = \"macos\"), not(windows)))]"
+          },
+          {
+            "lineNumber": 1276,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 1277,
+            "text": "        error!(\"macOS / Windows 以外では図形描画機能は未実装です\");"
+          },
+          {
+            "lineNumber": 1278,
+            "text": "        Ok(DrawShapeResult {"
+          },
+          {
+            "lineNumber": 1279,
+            "text": "            drawn: false,"
+          },
+          {
+            "lineNumber": 1280,
+            "text": "            shape_type: format!(\"{:?}\", params.shape_type),"
+          },
+          {
+            "lineNumber": 1281,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 1282,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 1283,
+            "text": "}"
+          },
+          {
+            "lineNumber": 1284
+          },
+          {
+            "lineNumber": 1285,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 1286,
+            "text": " * 起動中のAffinityアプリを検出"
+          },
+          {
+            "lineNumber": 1287,
+            "text": " */"
+          },
+          {
+            "lineNumber": 1288,
+            "text": "#[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 1289,
+            "text": "async fn detect_running_affinity_app() -\u003e Option\u003cString\u003e {"
+          },
+          {
+            "lineNumber": 1290,
+            "text": "    let apps = vec![\"Affinity Photo\", \"Affinity Designer\", \"Affinity Publisher\"];"
+          },
+          {
+            "lineNumber": 1291,
+            "text": "    "
+          },
+          {
+            "lineNumber": 1292,
+            "text": "    for app in \u0026apps {"
+          },
+          {
+            "lineNumber": 1293,
+            "text": "        let script = format!("
+          },
+          {
+            "lineNumber": 1294,
+            "text": "            r#\""
+          },
+          {
+            "lineNumber": 1295,
+            "text": "            tell application \"System Events\""
+          },
+          {
+            "lineNumber": 1296,
+            "text": "                set appList to name of every process whose name contains \"{}\""
+          },
+          {
+            "lineNumber": 1297,
+            "text": "                if (count of appList) \u003e 0 then"
+          },
+          {
+            "lineNumber": 1298,
+            "text": "                    return \"{}\""
+          },
+          {
+            "lineNumber": 1299,
+            "text": "                end if"
+          },
+          {
+            "lineNumber": 1300,
+            "text": "            end tell"
+          },
+          {
+            "lineNumber": 1301,
+            "text": "            return \"\""
+          },
+          {
+            "lineNumber": 1302,
+            "text": "            \"#,"
+          },
+          {
+            "lineNumber": 1303,
+            "text": "            app.replace(\"Affinity \", \"\"),"
+          },
+          {
+            "lineNumber": 1304,
+            "text": "            app"
+          },
+          {
+            "lineNumber": 1305,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 1306,
+            "text": "        "
+          },
+          {
+            "lineNumber": 1307,
+            "text": "        match run_applescript(\u0026script).await {"
+          },
+          {
+            "lineNumber": 1308,
+            "text": "            Ok(result) if !result.trim().is_empty() \u0026\u0026 result.trim() != \"false\" \u0026\u0026 !result.trim().contains(\"error\") =\u003e {"
+          },
+          {
+            "lineNumber": 1309,
+            "text": "                return Some(app.to_string());"
+          },
+          {
+            "lineNumber": 1310,
+            "text": "            }"
+          },
+          {
+            "lineNumber": 1311,
+            "text": "            _ =\u003e {}"
+          },
+          {
+            "lineNumber": 1312,
+            "text": "        }"
+          },
+          {
+            "lineNumber": 1313,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 1314,
+            "text": "    "
+          },
+          {
+            "lineNumber": 1315,
+            "text": "    // アプリケーションが起動していない場合、デフォルトでPhotoを返す（起動を試みる）"
+          },
+          {
+            "lineNumber": 1316,
+            "text": "    // Affinity.appが存在する場合は、それを優先"
+          },
+          {
+            "lineNumber": 1317,
+            "text": "    Some(\"Affinity\".to_string())"
+          },
+          {
+            "lineNumber": 1318,
+            "text": "}"
+          },
+          {
+            "lineNumber": 1319
+          },
+          {
+            "lineNumber": 1320,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 1321,
+            "text": " * 図形描画用のAppleScriptを生成（実際の操作を実行）"
+          },
+          {
+            "lineNumber": 1322,
+            "text": " * "
+          },
+          {
+            "lineNumber": 1323,
+            "text": " * 注意: AffinityのAppleScript APIは限定的なため、キーボードショートカットと"
+          },
+          {
+            "lineNumber": 1324,
+            "text": " * System Eventsを使用してUI操作をシミュレートします。"
+          },
+          {
+            "lineNumber": 1325,
+            "text": " "
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 1,
+            "line": 1324
+          },
+          "startPosition": {
+            "column": 10,
+            "line": 1257
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.47136399149894714
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 250,
+            "text": "*/"
+          },
+          {
+            "lineNumber": 251,
+            "text": "pub async fn create_new(params: CreateNewParams) -\u003e Result\u003cCreateNewResult\u003e {"
+          },
+          {
+            "lineNumber": 252,
+            "text": "    debug!("
+          },
+          {
+            "lineNumber": 253,
+            "text": "        function = \"create_new\","
+          },
+          {
+            "lineNumber": 254,
+            "text": "        app = ?params.app,"
+          },
+          {
+            "lineNumber": 255,
+            "text": "        width = params.width,"
+          },
+          {
+            "lineNumber": 256,
+            "text": "        height = params.height,"
+          },
+          {
+            "lineNumber": 257,
+            "text": "        \"Affinity新規ドキュメントを作成します\""
+          },
+          {
+            "lineNumber": 258,
+            "text": "    );"
+          },
+          {
+            "lineNumber": 259
+          },
+          {
+            "lineNumber": 260,
+            "text": "    #[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 261,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 262,
+            "text": "        let app_name = params.app.app_name();"
+          },
+          {
+            "lineNumber": 263,
+            "text": "        let width = params.width.unwrap_or(1920);"
+          },
+          {
+            "lineNumber": 264,
+            "text": "        let height = params.height.unwrap_or(1080);"
+          },
+          {
+            "lineNumber": 265
+          },
+          {
+            "lineNumber": 266,
+            "text": "        let script = format!("
+          },
+          {
+            "lineNumber": 267,
+            "text": "            r#\""
+          },
+          {
+            "lineNumber": 268,
+            "text": "            tell application \"{}\""
+          },
+          {
+            "lineNumber": 269,
+            "text": "                activate"
+          },
+          {
+            "lineNumber": 270,
+            "text": "                make new document with properties {{width:{}, height:{}}}"
+          },
+          {
+            "lineNumber": 271,
+            "text": "            end tell"
+          },
+          {
+            "lineNumber": 272,
+            "text": "            \"#,"
+          },
+          {
+            "lineNumber": 273,
+            "text": "            app_name, width, height"
+          },
+          {
+            "lineNumber": 274,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 275
+          },
+          {
+            "lineNumber": 276,
+            "text": "        run_applescript(\u0026script).await"
+          },
+          {
+            "lineNumber": 277,
+            "text": "            .context(format!(\"新規ドキュメント作成に失敗しました: {}\", app_name))?;"
+          },
+          {
+            "lineNumber": 278
+          },
+          {
+            "lineNumber": 279,
+            "text": "        debug!("
+          },
+          {
+            "lineNumber": 280,
+            "text": "            function = \"create_new\","
+          },
+          {
+            "lineNumber": 281,
+            "text": "            app = %app_name,"
+          },
+          {
+            "lineNumber": 282,
+            "text": "            \"新規ドキュメントを作成しました\""
+          },
+          {
+            "lineNumber": 283,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 284
+          },
+          {
+            "lineNumber": 285,
+            "text": "        Ok(CreateNewResult {"
+          },
+          {
+            "lineNumber": 286,
+            "text": "            created: true,"
+          },
+          {
+            "lineNumber": 287,
+            "text": "            app: app_name.to_string(),"
+          },
+          {
+            "lineNumber": 288,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 289,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 290
+          },
+          {
+            "lineNumber": 291,
+            "text": "    #[cfg(windows)]"
+          },
+          {
+            "lineNumber": 292,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 293,
+            "text": "        let app_name = params.app.app_name().to_string();"
+          },
+          {
+            "lineNumber": 294,
+            "text": "        affinity_win::launch_app(\u0026params.app)?;"
+          },
+          {
+            "lineNumber": 295,
+            "text": "        Ok(CreateNewResult {"
+          },
+          {
+            "lineNumber": 296,
+            "text": "            created: true,"
+          },
+          {
+            "lineNumber": 297,
+            "text": "            app: app_name,"
+          },
+          {
+            "lineNumber": 298,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 299,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 300
+          },
+          {
+            "lineNumber": 301,
+            "text": "    #[cfg(all(not(target_os = \"macos\"), not(windows)))]"
+          },
+          {
+            "lineNumber": 302,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 303,
+            "text": "        error!(\"macOS / Windows 以外では新規作成機能は未実装です\");"
+          },
+          {
+            "lineNumber": 304,
+            "text": "        Ok(CreateNewResult {"
+          },
+          {
+            "lineNumber": 305,
+            "text": "            created: false,"
+          },
+          {
+            "lineNumber": 306,
+            "text": "            app: \"Unsupported\".to_string(),"
+          },
+          {
+            "lineNumber": 307,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 308,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 309,
+            "text": "}"
+          },
+          {
+            "lineNumber": 310
+          },
+          {
+            "lineNumber": 311,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 312,
+            "text": " * エクスポートパラメータ"
+          },
+          {
+            "lineNumber": 313,
+            "text": " */"
+          },
+          {
+            "lineNumber": 314,
+            "text": "#[derive(Debug, Deserialize, Serialize, JsonSchema)]"
+          },
+          {
+            "lineNumber": 315,
+            "text": "pub struct ExportParams {"
+          },
+          {
+            "lineNumber": 316,
+            "text": "    /// エクスポート先のファイルパス"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "line": 316
+          },
+          "startPosition": {
+            "column": 1,
+            "line": 249
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.4655207097530365
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 1631,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 1632,
+            "text": " * Affinityブリッジツールのスタブ初期化"
+          },
+          {
+            "lineNumber": 1633,
+            "text": " */"
+          },
+          {
+            "lineNumber": 1634,
+            "text": "pub async fn init_stub() -\u003e anyhow::Result\u003c()\u003e {"
+          },
+          {
+            "lineNumber": 1635,
+            "text": "    #[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 1636,
+            "text": "    debug!(\"affinity bridge initialized. macOS: AppleScript support enabled. 16-parallel processing ready. Pikachu drawing ready. Shape drawing ready.\");"
+          },
+          {
+            "lineNumber": 1637,
+            "text": "    #[cfg(windows)]"
+          },
+          {
+            "lineNumber": 1638,
+            "text": "    debug!(\"affinity bridge initialized. Windows: open/create/Pikachu via installed Affinity exe; export/UI automation not yet implemented.\");"
+          },
+          {
+            "lineNumber": 1639,
+            "text": "    #[cfg(all(not(target_os = \"macos\"), not(windows)))]"
+          },
+          {
+            "lineNumber": 1640,
+            "text": "    debug!(\"affinity bridge initialized. Non-macOS non-Windows: limited Affinity support.\");"
+          },
+          {
+            "lineNumber": 1641,
+            "text": "    Ok(())"
+          },
+          {
+            "lineNumber": 1642,
+            "text": "}"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 1,
+            "line": 1641
+          },
+          "startPosition": {
+            "column": 1,
+            "line": 1628
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.44965431094169617
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 1471,
+            "text": " {"
+          },
+          {
+            "lineNumber": 1472,
+            "text": "    info!("
+          },
+          {
+            "lineNumber": 1473,
+            "text": "        function = \"add_text\","
+          },
+          {
+            "lineNumber": 1474,
+            "text": "        text = %params.text,"
+          },
+          {
+            "lineNumber": 1475,
+            "text": "        \"Affinityにテキストを追加します\""
+          },
+          {
+            "lineNumber": 1476,
+            "text": "    );"
+          },
+          {
+            "lineNumber": 1477
+          },
+          {
+            "lineNumber": 1478,
+            "text": "    #[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 1479,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 1480,
+            "text": "        let app_name = detect_running_affinity_app().await"
+          },
+          {
+            "lineNumber": 1481,
+            "text": "            .unwrap_or_else(|| \"Affinity Photo\".to_string());"
+          },
+          {
+            "lineNumber": 1482,
+            "text": "        "
+          },
+          {
+            "lineNumber": 1483,
+            "text": "        let x = params.x.unwrap_or(100.0);"
+          },
+          {
+            "lineNumber": 1484,
+            "text": "        let y = params.y.unwrap_or(100.0);"
+          },
+          {
+            "lineNumber": 1485,
+            "text": "        let _font_size = params.font_size.unwrap_or(24.0);"
+          },
+          {
+            "lineNumber": 1486,
+            "text": "        let _color = params.color.as_deref().unwrap_or(\"#000000\");"
+          },
+          {
+            "lineNumber": 1487,
+            "text": "        "
+          },
+          {
+            "lineNumber": 1488,
+            "text": "        let process_name = app_name.replace(\"Affinity \", \"\");"
+          },
+          {
+            "lineNumber": 1489,
+            "text": "        let script = format!("
+          },
+          {
+            "lineNumber": 1490,
+            "text": "            r#\""
+          },
+          {
+            "lineNumber": 1491,
+            "text": "            tell application \"{}\""
+          },
+          {
+            "lineNumber": 1492,
+            "text": "                activate"
+          },
+          {
+            "lineNumber": 1493,
+            "text": "            end tell"
+          },
+          {
+            "lineNumber": 1494,
+            "text": "            delay 0.5"
+          },
+          {
+            "lineNumber": 1495,
+            "text": "            tell application \"System Events\""
+          },
+          {
+            "lineNumber": 1496,
+            "text": "                tell process \"{}\""
+          },
+          {
+            "lineNumber": 1497,
+            "text": "                    -- テキストツールを選択（Tキー）"
+          },
+          {
+            "lineNumber": 1498,
+            "text": "                    key code 17"
+          },
+          {
+            "lineNumber": 1499,
+            "text": "                    delay 0.3"
+          },
+          {
+            "lineNumber": 1500,
+            "text": "                    -- キャンバス上でクリック"
+          },
+          {
+            "lineNumber": 1501,
+            "text": "                    -- 注意: 実際の座標でのクリックは座標変換が必要"
+          },
+          {
+            "lineNumber": 1502,
+            "text": "                    log \"Text tool activated. Click at ({}, {}) to add text: \\\"{}\\\"\""
+          },
+          {
+            "lineNumber": 1503,
+            "text": "                    -- テキストを入力（実際の入力は手動またはさらなるオートメーションが必要）"
+          },
+          {
+            "lineNumber": 1504,
+            "text": "                end tell"
+          },
+          {
+            "lineNumber": 1505,
+            "text": "            end tell"
+          },
+          {
+            "lineNumber": 1506,
+            "text": "            \"#,"
+          },
+          {
+            "lineNumber": 1507,
+            "text": "            app_name,"
+          },
+          {
+            "lineNumber": 1508,
+            "text": "            process_name,"
+          },
+          {
+            "lineNumber": 1509,
+            "text": "            x, y, params.text"
+          },
+          {
+            "lineNumber": 1510,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 1511
+          },
+          {
+            "lineNumber": 1512,
+            "text": "        run_applescript(\u0026script).await"
+          },
+          {
+            "lineNumber": 1513,
+            "text": "            .context(format!(\"テキスト追加に失敗しました: {}\", params.text))?;"
+          },
+          {
+            "lineNumber": 1514
+          },
+          {
+            "lineNumber": 1515,
+            "text": "        info!("
+          },
+          {
+            "lineNumber": 1516,
+            "text": "            function = \"add_text\","
+          },
+          {
+            "lineNumber": 1517,
+            "text": "            text = %params.text,"
+          },
+          {
+            "lineNumber": 1518,
+            "text": "            \"テキストを追加しました\""
+          },
+          {
+            "lineNumber": 1519,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 1520
+          },
+          {
+            "lineNumber": 1521,
+            "text": "        Ok(AddTextResult {"
+          },
+          {
+            "lineNumber": 1522,
+            "text": "            added: true,"
+          },
+          {
+            "lineNumber": 1523,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 1524,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 1525
+          },
+          {
+            "lineNumber": 1526,
+            "text": "    #[cfg(windows)]"
+          },
+          {
+            "lineNumber": 1527,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 1528,
+            "text": "        error!"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 14,
+            "line": 1527
+          },
+          "startPosition": {
+            "column": 69,
+            "line": 1470
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.4397415518760681
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 1179,
+            "text": "*/"
+          },
+          {
+            "lineNumber": 1180,
+            "text": "pub async fn draw_shape(params: DrawShapeParams) -\u003e Result\u003cDrawShapeResult\u003e {"
+          },
+          {
+            "lineNumber": 1181,
+            "text": "    info!("
+          },
+          {
+            "lineNumber": 1182,
+            "text": "        function = \"draw_shape\","
+          },
+          {
+            "lineNumber": 1183,
+            "text": "        shape_type = ?params.shape_type,"
+          },
+          {
+            "lineNumber": 1184,
+            "text": "        \"Affinityで図形を描画します\""
+          },
+          {
+            "lineNumber": 1185,
+            "text": "    );"
+          },
+          {
+            "lineNumber": 1186
+          },
+          {
+            "lineNumber": 1187,
+            "text": "    #[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 1188,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 1189,
+            "text": "        // 起動中のAffinityアプリを検出、なければPhotoを起動"
+          },
+          {
+            "lineNumber": 1190,
+            "text": "        let app_name = detect_running_affinity_app().await"
+          },
+          {
+            "lineNumber": 1191,
+            "text": "            .unwrap_or_else(|| \"Affinity\".to_string());"
+          },
+          {
+            "lineNumber": 1192,
+            "text": "        "
+          },
+          {
+            "lineNumber": 1193,
+            "text": "        // アプリケーションが起動していない場合、起動を試みる"
+          },
+          {
+            "lineNumber": 1194,
+            "text": "        let process_name = if app_name == \"Affinity\" {"
+          },
+          {
+            "lineNumber": 1195,
+            "text": "            \"Affinity\".to_string()"
+          },
+          {
+            "lineNumber": 1196,
+            "text": "        } else {"
+          },
+          {
+            "lineNumber": 1197,
+            "text": "            app_name.replace(\"Affinity \", \"\")"
+          },
+          {
+            "lineNumber": 1198,
+            "text": "        };"
+          },
+          {
+            "lineNumber": 1199,
+            "text": "        "
+          },
+          {
+            "lineNumber": 1200,
+            "text": "        let app_name_for_launch = if app_name == \"Affinity\" {"
+          },
+          {
+            "lineNumber": 1201,
+            "text": "            \"Affinity\".to_string()"
+          },
+          {
+            "lineNumber": 1202,
+            "text": "        } else {"
+          },
+          {
+            "lineNumber": 1203,
+            "text": "            app_name.clone()"
+          },
+          {
+            "lineNumber": 1204,
+            "text": "        };"
+          },
+          {
+            "lineNumber": 1205,
+            "text": "        "
+          },
+          {
+            "lineNumber": 1206,
+            "text": "        let launch_script = format!"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 35,
+            "line": 1205
+          },
+          "startPosition": {
+            "column": 1,
+            "line": 1178
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.4249316453933716
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 360,
+            "text": "*/"
+          },
+          {
+            "lineNumber": 361,
+            "text": "pub async fn export(params: ExportParams) -\u003e Result\u003cExportResult\u003e {"
+          },
+          {
+            "lineNumber": 362,
+            "text": "    debug!("
+          },
+          {
+            "lineNumber": 363,
+            "text": "        function = \"export\","
+          },
+          {
+            "lineNumber": 364,
+            "text": "        path = %params.path,"
+          },
+          {
+            "lineNumber": 365,
+            "text": "        format = ?params.format,"
+          },
+          {
+            "lineNumber": 366,
+            "text": "        quality = params.quality,"
+          },
+          {
+            "lineNumber": 367,
+            "text": "        \"Affinityドキュメントをエクスポートします\""
+          },
+          {
+            "lineNumber": 368,
+            "text": "    );"
+          },
+          {
+            "lineNumber": 369
+          },
+          {
+            "lineNumber": 370,
+            "text": "    #[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 371,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 372,
+            "text": "        let format_str = match params.format {"
+          },
+          {
+            "lineNumber": 373,
+            "text": "            ExportFormat::Pdf =\u003e \"pdf\","
+          },
+          {
+            "lineNumber": 374,
+            "text": "            ExportFormat::Png =\u003e \"png\","
+          },
+          {
+            "lineNumber": 375,
+            "text": "            ExportFormat::Jpg =\u003e \"jpg\","
+          },
+          {
+            "lineNumber": 376,
+            "text": "            ExportFormat::Tiff =\u003e \"tiff\","
+          },
+          {
+            "lineNumber": 377,
+            "text": "            ExportFormat::Svg =\u003e \"svg\","
+          },
+          {
+            "lineNumber": 378,
+            "text": "        };"
+          },
+          {
+            "lineNumber": 379
+          },
+          {
+            "lineNumber": 380,
+            "text": "        let script = format!("
+          },
+          {
+            "lineNumber": 381,
+            "text": "            r#\""
+          },
+          {
+            "lineNumber": 382,
+            "text": "            tell application \"Affinity Photo\""
+          },
+          {
+            "lineNumber": 383,
+            "text": "                activate"
+          },
+          {
+            "lineNumber": 384,
+            "text": "                if (count of documents) \u003e 0 then"
+          },
+          {
+            "lineNumber": 385,
+            "text": "                    tell front document"
+          },
+          {
+            "lineNumber": 386,
+            "text": "                        export in file \"{}\" as \"{}\" with options {{quality:{}}}"
+          },
+          {
+            "lineNumber": 387,
+            "text": "                    end tell"
+          },
+          {
+            "lineNumber": 388,
+            "text": "                else"
+          },
+          {
+            "lineNumber": 389,
+            "text": "                    error \"開いているドキュメントがありません\""
+          },
+          {
+            "lineNumber": 390,
+            "text": "                end if"
+          },
+          {
+            "lineNumber": 391,
+            "text": "            end tell"
+          },
+          {
+            "lineNumber": 392,
+            "text": "            \"#,"
+          },
+          {
+            "lineNumber": 393,
+            "text": "            std::fs::canonicalize(\u0026params.path)"
+          },
+          {
+            "lineNumber": 394,
+            "text": "                .unwrap_or_else(|_| std::path::PathBuf::from(\u0026params.path))"
+          },
+          {
+            "lineNumber": 395,
+            "text": "                .to_string_lossy(),"
+          },
+          {
+            "lineNumber": 396,
+            "text": "            format_str,"
+          },
+          {
+            "lineNumber": 397,
+            "text": "            params.quality.unwrap_or(90)"
+          },
+          {
+            "lineNumber": 398,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 399
+          },
+          {
+            "lineNumber": 400,
+            "text": "        run_applescript(\u0026script).await"
+          },
+          {
+            "lineNumber": 401,
+            "text": "            .context(format!(\"エクスポートに失敗しました: {}\", params.path))?;"
+          },
+          {
+            "lineNumber": 402
+          },
+          {
+            "lineNumber": 403,
+            "text": "        debug!("
+          },
+          {
+            "lineNumber": 404,
+            "text": "            function = \"export\","
+          },
+          {
+            "lineNumber": 405,
+            "text": "            path = %params.path,"
+          },
+          {
+            "lineNumber": 406,
+            "text": "            \"エクスポートしました\""
+          },
+          {
+            "lineNumber": 407,
+            "text": "        );"
+          },
+          {
+            "lineNumber": 408
+          },
+          {
+            "lineNumber": 409,
+            "text": "        Ok(ExportResult {"
+          },
+          {
+            "lineNumber": 410,
+            "text": "            exported: true,"
+          },
+          {
+            "lineNumber": 411,
+            "text": "            path: params.path,"
+          },
+          {
+            "lineNumber": 412,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 413,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 414
+          },
+          {
+            "lineNumber": 415,
+            "text": "    #[cfg(all(not(target_os = \"macos\"), not(windows)))]"
+          },
+          {
+            "lineNumber": 416,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 417,
+            "text": "        error!(\"macOS / Windows 以外ではエクスポート機能は未実装です\");"
+          },
+          {
+            "lineNumber": 418,
+            "text": "        Ok(ExportResult {"
+          },
+          {
+            "lineNumber": 419,
+            "text": "            exported: false,"
+          },
+          {
+            "lineNumber": 420,
+            "text": "            path: params.path,"
+          },
+          {
+            "lineNumber": 421,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 422,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 423
+          },
+          {
+            "lineNumber": 424,
+            "text": "    #[cfg(windows)]"
+          },
+          {
+            "lineNumber": 425,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 426,
+            "text": "        error!(\"Windows ではエクスポートは未実装です（macOS AppleScript 相当の自動化が必要）"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 117,
+            "line": 425
+          },
+          "startPosition": {
+            "column": 1,
+            "line": 359
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.4238283932209015
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 420,
+            "text": ","
+          },
+          {
+            "lineNumber": 421,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 422,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 423
+          },
+          {
+            "lineNumber": 424,
+            "text": "    #[cfg(windows)]"
+          },
+          {
+            "lineNumber": 425,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 426,
+            "text": "        error!(\"Windows ではエクスポートは未実装です（macOS AppleScript 相当の自動化が必要）\");"
+          },
+          {
+            "lineNumber": 427,
+            "text": "        Ok(ExportResult {"
+          },
+          {
+            "lineNumber": 428,
+            "text": "            exported: false,"
+          },
+          {
+            "lineNumber": 429,
+            "text": "            path: params.path,"
+          },
+          {
+            "lineNumber": 430,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 431,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 432,
+            "text": "}"
+          },
+          {
+            "lineNumber": 433
+          },
+          {
+            "lineNumber": 434,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 435,
+            "text": " * フィルター適用パラメータ"
+          },
+          {
+            "lineNumber": 436,
+            "text": " */"
+          },
+          {
+            "lineNumber": 437,
+            "text": "#[derive(Debug, Deserialize, Serialize, JsonSchema)]"
+          },
+          {
+            "lineNumber": 438,
+            "text": "pub struct ApplyFilterParams {"
+          },
+          {
+            "lineNumber": 439,
+            "text": "    /// フィルター名"
+          },
+          {
+            "lineNumber": 440,
+            "text": "    pub filter_name: String,"
+          },
+          {
+            "lineNumber": 441,
+            "text": "    /// 強度（0-100）"
+          },
+          {
+            "lineNumber": 442,
+            "text": "    #[serde(default)]"
+          },
+          {
+            "lineNumber": 443,
+            "text": "    pub intensity: Option\u003cu8\u003e,"
+          },
+          {
+            "lineNumber": 444,
+            "text": "}"
+          },
+          {
+            "lineNumber": 445
+          },
+          {
+            "lineNumber": 446,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 447,
+            "text": " * フィルター適用結果"
+          },
+          {
+            "lineNumber": 448,
+            "text": " */"
+          },
+          {
+            "lineNumber": 449,
+            "text": "#[derive(Debug, Serialize, JsonSchema)]"
+          },
+          {
+            "lineNumber": 450,
+            "text": "pub struct ApplyFilterResult {"
+          },
+          {
+            "lineNumber": 451,
+            "text": "    /// 適用成功かどうか"
+          },
+          {
+            "lineNumber": 452,
+            "text": "    pub applied: bool,"
+          },
+          {
+            "lineNumber": 453,
+            "text": "    /// 適用したフィルター名"
+          },
+          {
+            "lineNumber": 454,
+            "text": "    pub filter_name: String,"
+          },
+          {
+            "lineNumber": 455,
+            "text": "}"
+          },
+          {
+            "lineNumber": 456
+          },
+          {
+            "lineNumber": 457,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 458,
+            "text": " * フィルターを適用"
+          },
+          {
+            "lineNumber": 459,
+            "text": " * "
+          },
+          {
+            "lineNumber": 460,
+            "text": " * 引数:"
+          },
+          {
+            "lineNumber": 461,
+            "text": " *   params: フィルター適用パラメータ"
+          },
+          {
+            "lineNumber": 462,
+            "text": " * "
+          },
+          {
+            "lineNumber": 463,
+            "text": " * 戻り値:"
+          },
+          {
+            "lineNumber": 464,
+            "text": " *   Result\u003cApplyFilterResult\u003e - 実行結果"
+          },
+          {
+            "lineNumber": 465,
+            "text": " * "
+          },
+          {
+            "lineNumber": 466,
+            "text": " * エラー:"
+          },
+          {
+            "lineNumber": 467,
+            "text": " *   フィルター適用に失敗した場合はエラーを返す"
+          },
+          {
+            "lineNumber": 468,
+            "text": " */"
+          },
+          {
+            "lineNumber": 469,
+            "text": "pub async fn apply_filter(params: ApplyFilterParams) -\u003e Result\u003cApplyFilterResult\u003e {"
+          },
+          {
+            "lineNumber": 470,
+            "text": "    debug!("
+          },
+          {
+            "lineNumber": 471,
+            "text": "        function = \"apply_filter\","
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 34,
+            "line": 470
+          },
+          "startPosition": {
+            "column": 29,
+            "line": 419
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.4173208475112915
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 625,
+            "text": "*/"
+          },
+          {
+            "lineNumber": 626,
+            "text": "pub async fn close_document() -\u003e Result\u003cCloseDocumentResult\u003e {"
+          },
+          {
+            "lineNumber": 627,
+            "text": "    debug!(function = \"close_document\", \"ドキュメントを閉じます\");"
+          },
+          {
+            "lineNumber": 628
+          },
+          {
+            "lineNumber": 629,
+            "text": "    #[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 630,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 631,
+            "text": "        let script = r#\""
+          },
+          {
+            "lineNumber": 632,
+            "text": "            tell application \"Affinity Photo\""
+          },
+          {
+            "lineNumber": 633,
+            "text": "                if (count of documents) \u003e 0 then"
+          },
+          {
+            "lineNumber": 634,
+            "text": "                    close front document"
+          },
+          {
+            "lineNumber": 635,
+            "text": "                end if"
+          },
+          {
+            "lineNumber": 636,
+            "text": "            end tell"
+          },
+          {
+            "lineNumber": 637,
+            "text": "        \"#;"
+          },
+          {
+            "lineNumber": 638
+          },
+          {
+            "lineNumber": 639,
+            "text": "        run_applescript(script).await"
+          },
+          {
+            "lineNumber": 640,
+            "text": "            .context(\"ドキュメントを閉じる処理に失敗しました\")?;"
+          },
+          {
+            "lineNumber": 641
+          },
+          {
+            "lineNumber": 642,
+            "text": "        debug!(function = \"close_document\", \"ドキュメントを閉じました\");"
+          },
+          {
+            "lineNumber": 643
+          },
+          {
+            "lineNumber": 644,
+            "text": "        Ok(CloseDocumentResult {"
+          },
+          {
+            "lineNumber": 645,
+            "text": "            closed: true,"
+          },
+          {
+            "lineNumber": 646,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 647,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 648
+          },
+          {
+            "lineNumber": 649,
+            "text": "    #[cfg(windows)]"
+          },
+          {
+            "lineNumber": 650,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 651,
+            "text": "        error!(\"Windows ではドキュメントを閉じる操作は未実装です\");"
+          },
+          {
+            "lineNumber": 652,
+            "text": "        Ok(CloseDocumentResult {"
+          },
+          {
+            "lineNumber": 653,
+            "text": "            closed: false,"
+          },
+          {
+            "lineNumber": 654,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 655,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 656
+          },
+          {
+            "lineNumber": 657,
+            "text": "    #[cfg(all(not(target_os = \"macos\"), not(windows)))]"
+          },
+          {
+            "lineNumber": 658,
+            "text": "    {"
+          },
+          {
+            "lineNumber": 659,
+            "text": "        error!(\"macOS / Windows 以外ではドキュメントを閉じる機能は未実装です\");"
+          },
+          {
+            "lineNumber": 660,
+            "text": "        Ok(CloseDocumentResult {"
+          },
+          {
+            "lineNumber": 661,
+            "text": "            closed: false,"
+          },
+          {
+            "lineNumber": 662,
+            "text": "        })"
+          },
+          {
+            "lineNumber": 663,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 664,
+            "text": "}"
+          },
+          {
+            "lineNumber": 665
+          },
+          {
+            "lineNumber": 666,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 667,
+            "text": " * ピカチュウを描画するパラメータ"
+          },
+          {
+            "lineNumber": 668,
+            "text": " */"
+          },
+          {
+            "lineNumber": 669,
+            "text": "#[derive(Debug, Deserialize, Serialize, JsonSchema)]"
+          },
+          {
+            "lineNumber": 670,
+            "text": "pub struct DrawPikachuParams {"
+          },
+          {
+            "lineNumber": 671,
+            "text": "    /// 出力先のファイルパス（省略時は一時ファイル）"
+          },
+          {
+            "lineNumber": 672,
+            "text": "    #[serde(default)]"
+          },
+          {
+            "lineNumber": 673,
+            "text": "    pub output_path: Option\u003cString\u003e,"
+          },
+          {
+            "lineNumber": 674,
+            "text": "    /// キャンバスサイズ（幅）"
+          },
+          {
+            "lineNumber": 675,
+            "text": "    #[serde(default)]"
+          },
+          {
+            "lineNumber": 676,
+            "text": "    pub width: Option\u003cu32\u003e,"
+          },
+          {
+            "lineNumber": 677,
+            "text": "    /// キャンバスサイズ（高さ）"
+          },
+          {
+            "lineNumber": 678,
+            "text": "    #[serde(default)]"
+          },
+          {
+            "lineNumber": 679,
+            "text": "    pub height: Option\u003cu32\u003e,"
+          },
+          {
+            "lineNumber": 680,
+            "text": "}"
+          },
+          {
+            "lineNumber": 681
+          },
+          {
+            "lineNumber": 682,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 683,
+            "text": " * ピカチュウを描画する結果"
+          },
+          {
+            "lineNumber": 684,
+            "text": " */"
+          },
+          {
+            "lineNumber": 685,
+            "text": "#[derive(Debug, Serialize, JsonSchema)]"
+          },
+          {
+            "lineNumber": 686,
+            "text": "pub struct DrawPikachuResult {"
+          },
+          {
+            "lineNumber": 687,
+            "text": "    /// 作成成功かどうか"
+          },
+          {
+            "lineNumber": 688,
+            "text": "    pub created: bool,"
+          },
+          {
+            "lineNumber": 689,
+            "text": "    /// 作成されたファイルのパス"
+          },
+          {
+            "lineNumber": 690,
+            "text": "    pub file_path: String,"
+          },
+          {
+            "lineNumber": 691,
+            "text": "    /// 使用したアプリ"
+          },
+          {
+            "lineNumber": 692,
+            "text": "    pub app: String,"
+          },
+          {
+            "lineNumber": 693,
+            "text": "}"
+          },
+          {
+            "lineNumber": 694
+          },
+          {
+            "lineNumber": 695,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 696,
+            "text": " * ピカチュウのSVGを生成してAffinityで開く"
+          },
+          {
+            "lineNumber": 697,
+            "text": " */"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 3,
+            "line": 696
+          },
+          "startPosition": {
+            "column": 1,
+            "line": 624
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.4136582911014557
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 1317,
+            "text": "    Some(\"Affinity\".to_string())"
+          },
+          {
+            "lineNumber": 1318,
+            "text": "}"
+          },
+          {
+            "lineNumber": 1319
+          },
+          {
+            "lineNumber": 1320,
+            "text": "/**"
+          },
+          {
+            "lineNumber": 1321,
+            "text": " * 図形描画用のAppleScriptを生成（実際の操作を実行）"
+          },
+          {
+            "lineNumber": 1322,
+            "text": " * "
+          },
+          {
+            "lineNumber": 1323,
+            "text": " * 注意: AffinityのAppleScript APIは限定的なため、キーボードショートカットと"
+          },
+          {
+            "lineNumber": 1324,
+            "text": " * System Eventsを使用してUI操作をシミュレートします。"
+          },
+          {
+            "lineNumber": 1325,
+            "text": " */"
+          },
+          {
+            "lineNumber": 1326,
+            "text": "#[cfg(target_os = \"macos\")]"
+          },
+          {
+            "lineNumber": 1327,
+            "text": "fn generate_shape_drawing_script(app_name: \u0026str, params: \u0026DrawShapeParams) -\u003e Result\u003cString\u003e {"
+          },
+          {
+            "lineNumber": 1328,
+            "text": "    let x = params.x.unwrap_or(100.0);"
+          },
+          {
+            "lineNumber": 1329,
+            "text": "    let y = params.y.unwrap_or(100.0);"
+          },
+          {
+            "lineNumber": 1330,
+            "text": "    let width = params.width.unwrap_or(200.0);"
+          },
+          {
+            "lineNumber": 1331,
+            "text": "    let height = params.height.unwrap_or(200.0);"
+          },
+          {
+            "lineNumber": 1332,
+            "text": "    let _color = params.color.as_deref().unwrap_or(\"#FFD700\");"
+          },
+          {
+            "lineNumber": 1333,
+            "text": "    "
+          },
+          {
+            "lineNumber": 1334,
+            "text": "    // Affinity.appの場合は、実際のプロセス名を取得"
+          },
+          {
+            "lineNumber": 1335,
+            "text": "    let process_name = if app_name == \"Affinity\" {"
+          },
+          {
+            "lineNumber": 1336,
+            "text": "        \"Affinity\".to_string()"
+          },
+          {
+            "lineNumber": 1337,
+            "text": "    } else {"
+          },
+          {
+            "lineNumber": 1338,
+            "text": "        app_name.replace(\"Affinity \", \"\")"
+          },
+          {
+            "lineNumber": 1339,
+            "text": "    };"
+          },
+          {
+            "lineNumber": 1340,
+            "text": "    "
+          },
+          {
+            "lineNumber": 1341,
+            "text": "    // Affinity Designer/Photoでは、キーボードショートカットとUI操作を使用"
+          },
+          {
+            "lineNumber": 1342,
+            "text": "    let script = match params.shape_type {"
+          },
+          {
+            "lineNumber": 1343,
+            "text": "        ShapeType::Circle =\u003e {"
+          },
+          {
+            "lineNumber": 1344,
+            "text": "            //"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 14,
+            "line": 1343
+          },
+          "startPosition": {
+            "column": 61,
+            "line": 1315
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity.rs",
+        "signatures": {}
+      },
+      "score": 0.40737414360046387
+    },
+    {
+      "codeBlock": {
+        "detailedLines": [
+          {
+            "lineNumber": 42,
+            "text": " {"
+          },
+          {
+            "lineNumber": 43,
+            "text": "    let pf = program_files();"
+          },
+          {
+            "lineNumber": 44,
+            "text": "    let pf86 = program_files_x86();"
+          },
+          {
+            "lineNumber": 45,
+            "text": "    match app {"
+          },
+          {
+            "lineNumber": 46,
+            "text": "        AffinityApp::Photo =\u003e vec!["
+          },
+          {
+            "lineNumber": 47,
+            "text": "            pf.join(r\"Affinity\\Photo 2\\Affinity Photo.exe\"),"
+          },
+          {
+            "lineNumber": 48,
+            "text": "            pf.join(r\"Affinity\\Affinity Photo\\Affinity Photo.exe\"),"
+          },
+          {
+            "lineNumber": 49,
+            "text": "            pf86.join(r\"Affinity\\Photo 2\\Affinity Photo.exe\"),"
+          },
+          {
+            "lineNumber": 50,
+            "text": "        ],"
+          },
+          {
+            "lineNumber": 51,
+            "text": "        AffinityApp::Designer =\u003e vec!["
+          },
+          {
+            "lineNumber": 52,
+            "text": "            pf.join(r\"Affinity\\Designer 2\\Affinity Designer.exe\"),"
+          },
+          {
+            "lineNumber": 53,
+            "text": "            pf.join(r\"Affinity\\Affinity Designer\\Affinity Designer.exe\"),"
+          },
+          {
+            "lineNumber": 54,
+            "text": "            pf86.join(r\"Affinity\\Designer 2\\Affinity Designer.exe\"),"
+          },
+          {
+            "lineNumber": 55,
+            "text": "        ],"
+          },
+          {
+            "lineNumber": 56,
+            "text": "        AffinityApp::Publisher =\u003e vec!["
+          },
+          {
+            "lineNumber": 57,
+            "text": "            pf.join(r\"Affinity\\Publisher 2\\Affinity Publisher.exe\"),"
+          },
+          {
+            "lineNumber": 58,
+            "text": "            pf.join(r\"Affinity\\Affinity Publisher\\Affinity Publisher.exe\"),"
+          },
+          {
+            "lineNumber": 59,
+            "text": "            pf86.join(r\"Affinity\\Publisher 2\\Affinity Publisher.exe\"),"
+          },
+          {
+            "lineNumber": 60,
+            "text": "        ],"
+          },
+          {
+            "lineNumber": 61,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 62,
+            "text": "}"
+          },
+          {
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64,
+            "text": "pub fn resolve_affinity_exe(app: \u0026AffinityApp) -\u003e anyhow::Result\u003cPathBuf\u003e {"
+          },
+          {
+            "lineNumber": 65,
+            "text": "    if let Some(p) = env_exe_for(app) {"
+          },
+          {
+            "lineNumber": 66,
+            "text": "        if p.is_file() {"
+          },
+          {
+            "lineNumber": 67,
+            "text": "            return Ok(p);"
+          },
+          {
+            "lineNumber": 68,
+            "text": "        }"
+          },
+          {
+            "lineNumber": 69,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 70,
+            "text": "    for c in candidate_exes(app) {"
+          },
+          {
+            "lineNumber": 71,
+            "text": "        if c.is_file() {"
+          },
+          {
+            "lineNumber": 72,
+            "text": "            return Ok(c);"
+          },
+          {
+            "lineNumber": 73,
+            "text": "        }"
+          },
+          {
+            "lineNumber": 74,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 75,
+            "text": "    anyhow::bail!("
+          },
+          {
+            "lineNumber": 76,
+            "text": "        \"Affinity の実行ファイルが見つかりません。{} を設定するか、Affinity を既定の場所にインストールしてください。\","
+          },
+          {
+            "lineNumber": 77,
+            "text": "        match app {"
+          },
+          {
+            "lineNumber": 78,
+            "text": "            AffinityApp::Photo =\u003e \"AFFINITY_PHOTO_EXE\","
+          },
+          {
+            "lineNumber": 79,
+            "text": "            AffinityApp::Designer =\u003e \"AFFINITY_DESIGNER_EXE\","
+          },
+          {
+            "lineNumber": 80,
+            "text": "            AffinityApp::Publisher =\u003e \"AFFINITY_PUBLISHER_EXE\","
+          },
+          {
+            "lineNumber": 81,
+            "text": "        }"
+          },
+          {
+            "lineNumber": 82,
+            "text": "    )"
+          },
+          {
+            "lineNumber": 83,
+            "text": "}"
+          },
+          {
+            "lineNumber": 84
+          },
+          {
+            "lineNumber": 85,
+            "text": "pub fn app_display_name(app: \u0026AffinityApp) -\u003e \u0026'static str {"
+          },
+          {
+            "lineNumber": 86,
+            "text": "    match app {"
+          },
+          {
+            "lineNumber": 87,
+            "text": "        AffinityApp::Photo =\u003e \"Affinity Photo\","
+          },
+          {
+            "lineNumber": 88,
+            "text": "        AffinityApp::Designer =\u003e \"Affinity Designer\","
+          },
+          {
+            "lineNumber": 89,
+            "text": "        AffinityApp::Publisher =\u003e \"Affinity Publisher\","
+          },
+          {
+            "lineNumber": 90,
+            "text": "    }"
+          },
+          {
+            "lineNumber": 91,
+            "text": "}"
+          },
+          {
+            "lineNumber": 92
+          },
+          {
+            "lineNumber": 93,
+            "text": "/// 指定アプリでファイルを開く（プロセスはデタッチ）。"
+          },
+          {
+            "lineNumber": 94,
+            "text": "pub fn open_file_path(path: \u0026str, app: Option\u003c\u0026AffinityApp\u003e) -\u003e anyhow::Result\u003cString\u003e {"
+          },
+          {
+            "lineNumber": 95,
+            "text": "    let path_buf = PathBuf::from(path);"
+          },
+          {
+            "lineNumber": 96,
+            "text": "    let canonical = std::fs::canonicalize(\u0026path_buf)"
+          },
+          {
+            "lineNumber": 97,
+            "text": "        .with_context"
+          }
+        ],
+        "range": {
+          "endPosition": {
+            "column": 21,
+            "line": 96
+          },
+          "startPosition": {
+            "column": 52,
+            "line": 41
+          }
+        },
+        "relativeWorkspacePath": ".\\src\\tools\\affinity_win.rs",
+        "signatures": {}
+      },
+      "score": 0.3966558873653412
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+<tool-use data-tool-type="unknown" data-tool-name="semantic_search_full"><details>
+<summary>Tool use: **semantic_search_full**</summary>
+
+</details></tool-use>
+
+_**Agent (composer-2-fast)**_
+
+
+
+
+
+
+_**Agent (composer-2-fast)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: C:\Users\Nathan\tools\AffinityMCP\src\tools\affinity.rs</summary>
+
+</details>
+</tool-use>
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2**</summary>
+
+</details></tool-use>
+
+_**Agent (composer-2-fast)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: C:\Users\Nathan\tools\AffinityMCP\src\tools\canva.rs</summary>
+
+</details>
+</tool-use>
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2**</summary>
+
+</details></tool-use>
+
+_**Agent (composer-2-fast)**_
+
+
+
+
+
+
+_**Agent (composer-2-fast)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: C:\Users\Nathan\tools\AffinityMCP\src\tools\canva.rs</summary>
+
+</details>
+</tool-use>
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2"><details>
+<summary>Tool use: **read_file_v2**</summary>
+
+</details></tool-use>
+
+_**Agent (composer-2-fast)**_
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "caseInsensitive": false,
+  "contextAfter": 25,
+  "contextBefore": 0,
+  "path": "C:\\Users\\Nathan\\tools\\AffinityMCP\\src\\tools\\affinity.rs",
+  "pattern": "batch_open|batch_export"
+}
+```
+Additional data:
+
+```json
+{
+  "isPruned": true,
+  "outputMode": "content",
+  "path": "C:\\Users\\Nathan\\tools\\AffinityMCP\\src\\tools\\affinity.rs",
+  "pattern": "batch_open|batch_export",
+  "topFiles": [
+    {
+      "matchCount": 108,
+      "uri": "src\\tools\\affinity.rs"
+    }
+  ],
+  "totalFiles": 1,
+  "totalMatches": 6
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search"><details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+</details></tool-use>
+
+_**Agent (composer-2-fast)**_
+
+
+Yes — **the MCP server works end-to-end** in Cursor: stdio JSON-RPC, `initialize`, `tools/list`, `tools/call`, `ping`, `notifications/initialized`, and tool dispatch all run.
+
+What **varies** is how much each **Affinity tool** does on **Windows**:
+
+| Works (real behavior) | Mostly stub on Windows |
+|----------------------|-------------------------|
+| **`affinity.get_active_document`** — session / window detection (your docked case) | **`affinity.export`** / **`batch_export`** — not implemented |
+| **`affinity.open_file`** — launches Affinity with a file | **`affinity.apply_filter`** — returns `applied: false` |
+| **`affinity.create_new`** — starts the app | **`affinity.close_document`** — returns `closed: false` |
+| **`affinity.batch_open_files`** — uses `open_file` | **`affinity.draw_shape`**, **`add_text`**, **`change_color`** — not implemented |
+| **`affinity.draw_pikachu`** — writes SVG and opens it | |
+| **`canva.create_design`** — **stub** (fake `design_id`, no Canva API) | |
+
+So: **MCP “functions”** as a server and **several Affinity tools are real** (open, new, active doc, batch open, pikachu). **Export, in-app drawing, filters, close, etc.** are still placeholders on Windows without UI automation / APIs. **macOS** has more AppleScript coverage for some of those, but still not everything is production-grade.
